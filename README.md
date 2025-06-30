@@ -20,3 +20,4 @@ Este repositório tem como objetivo documentar minha jornada de aprendizado, fac
 
 - Os projetos aqui podem estar em diferentes estágios de desenvolvimento.
 - Alguns projetos podem conter adaptações com anotações pessoais para reforço de aprendizado.
+- Imagem de mídia social do repositório feita com: https://www.bannerbear.com/demos/github-social-preview-generator-tool/
