@@ -62,10 +62,70 @@ app.MapControllers(); // 🔵 Onde os pedidos são atendidos - Mapeia os endpoin
 - `app.Run();`
     - 🔵 Finalmente... portas abertas! Lanchonete está funcionando!
     - Inicia a aplicação ASP.NET Core e escuta requisições HTTP.
-    - 
+
+## Explicando appsettings.json do .NET
+
+`appsettings.json` é o arquivo de configuração padrão do .NET que armazena <ins>chave-valor</ins> em formato `JSON`. Este arquivo é lido automaticamente quando executamos uma aplicação do .NET.
+
+Algumas informações comuns que podemos encontrar/inserir lá são:
+- String de conexão com banco de dados.
+- Chaves API externas
+- Configurações para cada ambiente (Development, Production...)
+
+## Ciclo de Vida de uma Aplicação .NET
+
+Para facilitar a leitura a seguir, veja o fluxo exemplo abaixo:
+```
+Início → Program.cs → Middlewares → Routing → Controller/Action → Resposta
+```
+
+O ciclo de vida de uma aplicação .NET se refere ao processo que acontece desde a inicialização do projeto até o momento em que uma requisição HTTP é recebida, processada e uma resposta é enviada ao cliente.
+
+1. Inicialmente, a execução da aplicação começa pelo `Program.cs`.
+2. Após a inicialização, temos a etapa de **middlewares**. Toda requisição HTTP passa por uma cadeia de middlewares, chamada de **Request Pipeline**.
+   - **O que é um Middleware?**  
+     É um componente que pode processar requisições e respostas. Cada middleware decide o que fazer: processar a requisição, passá-la para o próximo middleware ou interromper o pipeline retornando a resposta diretamente.
+   - Exemplos de middlewares comuns:
+     - `UseRouting()` – Identifica qual endpoint deve tratar a requisição
+     - `UseAuthentication()` – Lida com autenticação (usuário está logado?)
+     - `UseAuthorization()` – Verifica se o usuário tem permissão para acessar
+     - `UseEndpoints()` / `MapControllers()` – Direciona a requisição ao controller adequado
+
+> [!TIP]
+> - Você pode criar seus próprios middlewares!  
+> - Exemplos práticos incluem: logging de requisições/respostas, tratamento global de erros, limitação de requisições (rate limiting), cache de respostas, entre outros.
+> - [No próximo tópico](#middlewares--pipeline-de-requisicao) eu explico melhor e com mais detalhes
+
+3. Depois de passar pela cadeia de middlewares, ocorre o **processamento da requisição**:
+   - O processamento é feito por um **controller**, que:
+     - Usa o **routing** para identificar qual método (`Action`) deve responder
+     - Recebe os dados da requisição (via `[FromBody]`, `[FromQuery]`, `[FromRoute]`, etc.)
+     - Executa a lógica de negócio, geralmente por meio de serviços injetados via **Injeção de Dependência**
+     - Retorna uma resposta (como `ActionResult`, `IActionResult`, JSON, etc.)
+     
+> [!TIP]
+> - Para não deixar sem comentar...
+> - `Routing` é o sistema que **mapeia as URLs das requisições HTTP** para os métodos (actions) dos controllers da aplicação/projeto. Ou seja, quando alguém acessa `/api/produtos/123`, o .NET precisa entender qual método deve ser executado, e o routing é quem faz isso.
+
+## Middlewares (+ Pipeline de Requisição)
+
+Normalmente você não vai dar muita atenção para middlewares em aplicações de desenvolvimento web. Mas para nível de conhecimento, vamos falar um pouco sobre os Middlewares.
+
+Middlewares são o coração do pipeline de requisição HTTP no .NET. Tudo o que entra e sai da aplicação passa por eles.
+
+Saber sobre middlewares te ajudará a:
+    - Monitorar e regirar requisições globalmente.
+    - Tratar exceções de forma centralizada.
+    - Manipular headers e cookies.
+    - Controlar autenticação/autorização.
+    - Otimizar desemepenho con cache.
+    - Interromper requisições antes de chegarem ao controller.
+    
 ---
 
-# Task
+# Conteúdos Específicos
+
+## Task
 
 Esse tipo vem da **programação assíncrona** no .NET.
 
@@ -77,7 +137,7 @@ Dentro de um método com essa assinatura, significa que ele será **executado de
 
 ---
 
-# IActionResult
+## IActionResult
 
 É uma interface que representa qualquer tipo de resposta HTTP em ASP.NET Core.
 
@@ -93,11 +153,10 @@ Portanto, o método com essa assinatura retorna uma resposta HTTP.
 
 Task<IActionResult>: A união dos dois retornar uma **resposta HTTP de uma operação assíncrona**.
 
----
 
-# Auto Mapper
+## Auto Mapper
 
-## O que é?
+### O que é?
 
 O AutoMapper é uma biblioteca que:
 
@@ -105,7 +164,7 @@ O AutoMapper é uma biblioteca que:
 - Pode ser usado para **converter de DTO → Entidade e vice-versa**.
 - Pode ser configurado com regras específicas via Profile.
 
-## Como usar?
+### Como usar?
 Para permitir seu uso são necessários alguns passos:
 
 1. Instalação:
