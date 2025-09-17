@@ -120,7 +120,71 @@ Saber sobre middlewares te ajudará a:
     - Controlar autenticação/autorização.
     - Otimizar desemepenho con cache.
     - Interromper requisições antes de chegarem ao controller.
-    
+
+🔵 Imaginemos o pipeline como uma linha de montage de uma fábrica de pãozinhos!
+    1. A primeira máquina adiciona a massa.
+    2. A segunda molda a massa.
+    3. A terceira assa.
+    4. A quarta embala.
+    - Se uma dessas etapas apresentar algum problema (ou decidir parar o processo) o pãozinho não segue adiante! 🥲
+    - O middleware tem essa ideia: cada um deles decide se a requisição continua no pipeline ou não.
+
+A ordenação dos middleware no pipeline é importantíssima. Colocar um middleware fora de ordem / em uma posição que não faz muito sentido (como autorizar e depois autenticar), pode não funcionar direito.
+
+Exemplo de um Middleware Simples:
+- Antes de continuar, ele loga a URL da requisição
+- Depois que o controller responder, ele loga o status da resposta
+```csharp
+app.Use(async (context, next) =>
+{
+    Console.WriteLine("➡️ Requisição chegando: " + context.Request.Path);
+
+    await next(); // Chama o próximo middleware
+
+    Console.WriteLine("⬅️ Resposta enviada: " + context.Response.StatusCode);
+});
+```
+
+Okay, falei tanto sobre pipeline mas o que é exatamente?
+
+O **pipeline de requisição** é a cadeia de middlewares que uma requisição HTTP percorre do momento em que entra na aplicação até sair com uma resposta.
+
+É como uma fila de etapas obrigatórias em que cada requisição deve passar.
+
+Fluxo simples do pipeline:
+```
+[Requisição HTTP chega]
+
+↓ app.UseRouting()
+↓ app.UseAuthentication()
+↓ app.UseAuthorization()
+↓ app.UseMiddleware<MeuMiddlewareCustomizado>()
+↓ app.MapControllers() ← Envia para o Controller / Action
+↓ Controller executa lógica
+↓ Resposta gerada
+
+[Resposta HTTP vai embora]
+```
+Como funcionana por trás dos panos?
+1. Cliente envia requisição HTTP
+    - ➡️ exemplo: GET /api/produtos/1
+
+2. A requisição passa por cada middleware
+    - Autenticação verifica token
+    - Autorização verifica roles
+    - Middlewares customizados fazem logging, validação, etc.
+
+3. A requisição chega ao Controller/Action
+    - .NET usa o routing para determinar qual método chamar
+
+4. O método executa, retorna um ActionResult
+    - ➡️ Ok(produto), NotFound(), etc.
+
+5. A resposta sobe pelo pipeline (passa pelos middlewares novamente, se necessário)
+    - Algum middleware pode adicionar headers, logs, etc.
+
+6. O servidor envia a resposta de volta ao cliente
+
 ---
 
 # Conteúdos Específicos
