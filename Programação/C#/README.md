@@ -185,6 +185,48 @@ Como funcionana por trás dos panos?
 
 6. O servidor envia a resposta de volta ao cliente
 
+## Dependecy Injection (DI)
+
+A Injeção de dependência é um padrão de desenvolvimento de programa de computadores. Ela permite que objetos/serviços sejam passados para uma classe ao invpes de a classe ter que criar suas próprias dependências.
+
+🔵 Digamos que você vai morar sozinho e vai precisar de eletrodomésticos. Imagine ainda que você precise sair de casa, visitar uma loja, fazer negócios e toda aquela burocracia para comprar um eletrodoméstico... mínimo chato, né? "Injetar Dependência", nesse cenário, seria <ins>alguém trazer seu eletrodoméstico até você</ins>, ou seja, <ins>alguém vai fornecer as coisas para você</ins>.
+
+o .NET tem um **Container de Injeção de Dependência** que gerencia as dependências da aplicação, e isso é configurado no `Program.cs`. Normalmente você irá encontrá-los dessa forma:
+```csharp
+builder.Services.AddTransient<IInterface, Classe>();
+builder.Services.AddScoped<IInterface, Classe>();
+builder.Services.AddSingleton<IInterface, Classe>();
+```
+
+Vamos analisar o que são esses três métodos:
+| Tipo           | Quando é criado?                                    | Quando usar?                                                                                                           |
+| -------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `AddTransient` | Uma **nova instância toda vez** que for solicitada. | Para serviços **leves** e **sem estado**. Ideal quando você quer garantir que o serviço esteja sempre "limpo".         |
+| `AddScoped`    | Uma instância **por requisição HTTP**.              | Para serviços que precisam compartilhar dados **dentro da mesma requisição**, como o `DbContext`.                      |
+| `AddSingleton` | **Uma única instância** para toda a aplicação.      | Para serviços que **nunca mudam** e são compartilhados por todos, como cache em memória, leitura de configuração, etc. |
+
+Ok, chega de teoria e historinha pra ler. Vamos pra um exemplo:
+```csharp
+public class MeuController : ControllerBase
+{
+    private readonly IMeuServico _meuServico;
+
+    public MeuController(IMeuServico meuServico)
+    {
+        _meuServico = meuServico;
+    }
+
+    [HttpGet]
+    public IActionResult ObterDados()
+    {
+        return Ok(_meuServico.ObterMensagem());
+    }
+}
+```
+
+- .NET Core _descobre_ que o `MeuController` precisa de `IMeuServico` e entrega uma instância automaticamente.
+- O controller declara uma dependência. (Lembrando que o .NET irá interpretar dependendo se é um `AddTransient`, `AddScoped` ou `AddSingleton`)
+
 ---
 
 # Conteúdos Específicos
